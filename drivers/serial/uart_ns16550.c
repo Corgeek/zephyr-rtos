@@ -116,6 +116,7 @@ LOG_MODULE_REGISTER(uart_ns16550, CONFIG_UART_LOG_LEVEL);
 #define IER_TBE 0x02   /* transmit bit enable */
 #define IER_LSR 0x04   /* line status interrupts */
 #define IER_MSI 0x08   /* modem status interrupts */
+#define IER_UUE 0x40   /* UART unit enable (Intel PXA) */
 
 /* equates for interrupt identification register */
 
@@ -371,6 +372,7 @@ struct uart_ns16550_dev_config {
 	bool dlf_auto;
 #endif
 	bool loopback;
+	bool pxa_uart;
 };
 
 /** Device data structure */
@@ -643,6 +645,11 @@ static void set_baud_rate(const struct device *dev, uint32_t baud_rate, uint32_t
 		ns16550_outbyte(dev_cfg, BRDL(dev), (unsigned char)(divisor & 0xff));
 		ns16550_outbyte(dev_cfg, BRDH(dev), (unsigned char)((divisor >> 8) & 0xff));
 #endif
+		if (dev_cfg->pxa_uart) {
+			/* PXA27x erratum 75: DLL has to be read back before DLAB is cleared */
+			(void)ns16550_inbyte(dev_cfg, BRDL(dev));
+		}
+
 		/* restore the DLAB to access the baud rate divisor registers */
 		ns16550_outbyte(dev_cfg, LCR(dev), lcr_cache);
 
@@ -820,7 +827,7 @@ static int uart_ns16550_configure(const struct device *dev,
 	(void)ns16550_read_char(dev, &c);
 
 	/* disable interrupts  */
-	ns16550_outbyte(dev_cfg, IER(dev), 0x00);
+	ns16550_outbyte(dev_cfg, IER(dev), dev_cfg->pxa_uart ? IER_UUE : 0x00);
 	ret = 0;
 
 out:
@@ -1522,7 +1529,7 @@ static void uart_ns16550_isr(const struct device *dev)
 #ifdef CONFIG_UART_NS16550_WA_ISR_REENABLE_INTERRUPT
 	uint8_t cached_ier = ns16550_inbyte(dev_cfg, IER(dev));
 
-	ns16550_outbyte(dev_cfg, IER(dev), 0U);
+	ns16550_outbyte(dev_cfg, IER(dev), dev_cfg->pxa_uart ? IER_UUE : 0U);
 	ns16550_outbyte(dev_cfg, IER(dev), cached_ier);
 #endif
 }
@@ -2157,7 +2164,8 @@ static DEVICE_API(uart, uart_ns16550_driver_api) = {
 			(.reset_spec = RESET_DT_SPEC_INST_GET(n),))                  \
 		IF_ENABLED(UART_NS16550_DLF_ENABLED,                                 \
 			(.dlf_auto = DT_INST_PROP(n, dlf_auto),))                    \
-		.loopback = DT_INST_PROP(n, loopback),
+		.loopback = DT_INST_PROP(n, loopback),                               \
+		.pxa_uart = DT_INST_PROP(n, pxa_uart),
 
 #define UART_NS16550_COMMON_DEV_DATA_INITIALIZER(n)                                  \
 		.uart_config.baudrate = DT_INST_PROP_OR(n, current_speed, 0),        \
