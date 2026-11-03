@@ -39,6 +39,12 @@ properties:
     type: boolean
     description: specify registers are IO mapped or memory mapped
 
+  pxa-uart:
+    type: boolean
+    description: |
+      Intel PXA variant, in which the UART stays off until the unit enable
+      bit of the interrupt enable register is set.
+
   loopback:
     type: boolean
     description: |
