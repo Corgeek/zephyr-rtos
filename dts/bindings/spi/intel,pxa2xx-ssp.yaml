@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Intel/Marvell PXA2xx SSP port, used as an SPI controller.
+
+  The driver polls, moves 4 to 16 bit words, and drives chip selects through
+  cs-gpios only, as the Zaurus does. The bit clock is a 13 MHz divided by
+  1 to 4096.
+
+compatible: "intel,pxa2xx-ssp"
+
+include: [spi-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  cken-bit:
+    type: int
+    required: true
+    description: Bit number of this port's clock enable in CKEN.
