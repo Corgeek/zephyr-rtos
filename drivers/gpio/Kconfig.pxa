@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config GPIO_PXA
+	bool "PXA2xx GPIO"
+	default y
+	depends on DT_HAS_INTEL_PXA2XX_GPIO_ENABLED
+	help
+	  On-chip GPIO of the PXA2xx, one device per 32-line bank.
