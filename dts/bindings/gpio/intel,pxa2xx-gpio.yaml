@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  One 32-line bank of the Intel/Marvell PXA2xx GPIO controller.
+
+  reg is the bank's GPLR. The bank's GPDR, GPSR, GPCR, GRER, GFER and GEDR
+  sit 0x0c, 0x18, 0x24, 0x30, 0x3c and 0x48 above it, in all four banks of a
+  PXA27x (GPLR0-2 at 0x00-0x08, GPLR3 at 0x100), so one node per bank needs
+  nothing else.
+
+  interrupts lists the interrupt sources of the bank's lines. GPIO0 and GPIO1
+  have one each, and every other line of every bank shares a third one, which
+  must come last in each bank's list:
+
+    gpio0: interrupts = <8 0>, <9 0>, <10 0>;
+    gpio1 to gpio3: interrupts = <10 0>;
+
+  Only edge interrupts are supported.
+
+  Configuring a line through this driver also routes it to plain GPIO
+  (alternate function 0).
+
+compatible: "intel,pxa2xx-gpio"
+
+include: [gpio-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  ngpios:
+    required: true
+
+  "#gpio-cells":
+    const: 2
+
+gpio-cells:
+  - pin
+  - flags

@@ -48,6 +48,56 @@
 		};
 
 		/*
+		 * One node per 32-line bank, at that bank's GPLR. GPIO0 and
+		 * GPIO1 have interrupt sources of their own; every other line
+		 * shares source 10.
+		 */
+		gpio0: gpio@40e00000 {
+			compatible = "intel,pxa2xx-gpio";
+			reg = <0x40e00000 0x4>;
+			interrupts = <8 0>, <9 0>, <10 0>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <32>;
+			status = "disabled";
+		};
+
+		gpio1: gpio@40e00004 {
+			compatible = "intel,pxa2xx-gpio";
+			reg = <0x40e00004 0x4>;
+			interrupts = <10 0>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <32>;
+			status = "disabled";
+		};
+
+		gpio2: gpio@40e00008 {
+			compatible = "intel,pxa2xx-gpio";
+			reg = <0x40e00008 0x4>;
+			interrupts = <10 0>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <32>;
+			status = "disabled";
+		};
+
+		/* GPIO96 to GPIO120 */
+		gpio3: gpio@40e00100 {
+			compatible = "intel,pxa2xx-gpio";
+			reg = <0x40e00100 0x4>;
+			interrupts = <10 0>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <25>;
+			status = "disabled";
+		};
+
+		/*
 		 * The three PXA UARTs are 16550 compatible, but with the
 		 * registers spaced four bytes apart. They run off the 312 MHz
 		 * peripheral PLL divided by 21.
