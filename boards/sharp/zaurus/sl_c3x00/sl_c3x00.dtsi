@@ -230,3 +230,13 @@
 		   <&gpio1 21 GPIO_ACTIVE_LOW>,
 		   <&gpio0 20 GPIO_ACTIVE_LOW>;
 };
+
+/* WM8750 audio codec at 0x1b */
+&i2c0 {
+	status = "okay";
+};
+
+/* ISL6271A core voltage regulator at 0x0c */
+&pwri2c {
+	status = "okay";
+};

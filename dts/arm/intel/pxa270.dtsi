@@ -5,6 +5,7 @@
  */
 
 #include <mem.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
 
 / {
 	#address-cells = <1>;
@@ -107,6 +108,28 @@
 			compatible = "intel,pxa2xx-ssp";
 			reg = <0x41900000 0x40>;
 			cken-bit = <4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		i2c0: i2c@40301680 {
+			compatible = "intel,pxa2xx-i2c";
+			reg = <0x40301680 0x24>;
+			cken-bit = <14>;
+			clock-frequency = <I2C_BITRATE_STANDARD>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		/* The power manager's I2C, on its own pins */
+		pwri2c: i2c@40f00180 {
+			compatible = "intel,pxa2xx-i2c";
+			reg = <0x40f00180 0x24>;
+			cken-bit = <15>;
+			clock-frequency = <I2C_BITRATE_STANDARD>;
+			pwr-i2c;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";

@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Intel/Marvell PXA2xx I2C controller, either the general purpose one or the
+  power manager's (PWR_I2C), as a polled bus master.
+
+  reg starts at IBMR (0x40301680 and 0x40f00180 on the PXA27x).
+
+compatible: "intel,pxa2xx-i2c"
+
+include: [i2c-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  cken-bit:
+    type: int
+    required: true
+    description: Bit number of this controller's clock enable in CKEN.
+
+  pwr-i2c:
+    type: boolean
+    description: |
+      The power manager's controller. Its pins are dedicated but stay off
+      until PCFR[PI2C_EN] is set, which the driver does.

@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config I2C_PXA
+	bool "PXA2xx I2C controller"
+	default y
+	depends on DT_HAS_INTEL_PXA2XX_I2C_ENABLED
+	help
+	  Polled bus master on the PXA2xx I2C and PWR_I2C controllers.
