@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  LCD timing generator and backlight of the Sharp Zaurus C7x0 and Cxx00
+  (Linux: corgi-lcd).
+
+  The timing generator takes one byte per register write, three address
+  bits over five data bits, and powers the panel up in a fixed sequence. It
+  also sets five of the six backlight duty bits; the sixth and the backlight
+  enable are GPIOs.
+
+compatible: "sharp,corgi-lcd"
+
+include: [spi-device.yaml]
+
+properties:
+  backlight-on-gpios:
+    type: phandle-array
+    required: true
+    description: Backlight enable.
+
+  backlight-cont-gpios:
+    type: phandle-array
+    required: true
+    description: Bit 5 of the backlight duty value.
+
+  brightness:
+    type: int
+    default: 0x1f
+    description: |
+      Backlight level at boot, 0 (off) to 0x2f, on Linux's corgi_bl scale.
+      Linux's default for the C3x00 is 0x1f.
+
+  qvga:
+    type: boolean
+    description: Run the panel at 240x320 instead of 480x640.

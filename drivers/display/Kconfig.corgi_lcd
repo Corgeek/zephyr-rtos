@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config CORGI_LCD
+	bool "Sharp corgi LCD timing generator and backlight"
+	default y
+	depends on DT_HAS_SHARP_CORGI_LCD_ENABLED
+	select SPI
+	select GPIO
+	help
+	  Powers up the panel of the Zaurus C7x0/Cxx00 and turns its
+	  backlight on.
+
+config CORGI_LCD_INIT_PRIORITY
+	int "corgi LCD init priority"
+	default 86
+	depends on CORGI_LCD
+	help
+	  After the LCD controller, which runs at DISPLAY_INIT_PRIORITY, and
+	  after SPI and the GPIO expanders it uses.
