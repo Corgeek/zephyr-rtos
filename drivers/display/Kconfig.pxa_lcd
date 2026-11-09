@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config DISPLAY_PXA_LCD
+	bool "PXA27x LCD controller"
+	default y
+	depends on DT_HAS_INTEL_PXA27X_LCD_ENABLED
+	select CACHE_MANAGEMENT if CPU_HAS_DCACHE
+	help
+	  16 bpp framebuffer on the PXA27x LCD controller.

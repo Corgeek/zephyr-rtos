@@ -135,6 +135,13 @@
 			status = "disabled";
 		};
 
+		lcd: lcd-controller@44000000 {
+			compatible = "intel,pxa27x-lcd";
+			reg = <0x44000000 0x1000>;
+			cken-bit = <16>;
+			status = "disabled";
+		};
+
 		/*
 		 * The three PXA UARTs are 16550 compatible, but with the
 		 * registers spaced four bytes apart. They run off the 312 MHz

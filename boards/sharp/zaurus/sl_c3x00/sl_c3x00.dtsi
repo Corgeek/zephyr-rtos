@@ -187,6 +187,7 @@
 	};
 
 	chosen {
+		zephyr,display = &lcd;
 		zephyr,sram = &sram0;
 		zephyr,console = &ffuart;
 		zephyr,shell-uart = &ffuart;
@@ -239,4 +240,27 @@
 /* ISL6271A core voltage regulator at 0x0c */
 &pwri2c {
 	status = "okay";
+};
+
+/* 480x640 portrait TFT, 16 bpp, timing from Linux's spitz_pxafb_modes */
+&lcd {
+	status = "okay";
+	width = <480>;
+	height = <640>;
+	alternate-mapping;
+
+	display-timings {
+		compatible = "zephyr,panel-timing";
+		clock-frequency = <26000000>;
+		hsync-len = <40>;
+		hback-porch = <46>;
+		hfront-porch = <125>;
+		vsync-len = <3>;
+		vback-porch = <1>;
+		vfront-porch = <0>;
+		hsync-active = <0>;
+		vsync-active = <0>;
+		de-active = <1>;
+		pixelclk-active = <0>;
+	};
 };
