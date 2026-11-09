@@ -108,10 +108,43 @@ also goes through the move to the link address.
 Running on hardware
 *******************
 
-There is no JTAG header on a stock SL-C3200. Boot ``zephyr.bin`` as a ``zImage``
-with kexec, for instance from a kexecboot menu entry on an SD card. Installing
-kexecboot replaces the Sharp kernel in NAND, so take the service menu NAND
-backup first; on this model it covers the system.
+There is no JTAG header and no in-system programmer on a stock SL-C3200, so
+there is no ``west flash``. The boot loader starts whatever ``zImage`` is in the
+kernel area of the NAND flash, and the Sharp ROM updater writes that area from
+a card. ``zephyr.bin`` takes the place of the Linux kernel there.
+
+.. warning::
+
+   This replaces the Sharp Linux kernel in NAND. Take the service menu NAND
+   backup first: hold :kbd:`D` and :kbd:`M` while inserting the battery and
+   powering on, then page 3/3, ``BACKUP RESTORE MENU``, item 1. On this model the
+   backup covers the system, and ``NAND Flash Restore`` in the same menu brings
+   it back. The boot loader and the menus are not touched, so they stay
+   reachable whatever the kernel area holds.
+
+#. Build the application as above. Next to ``zephyr.bin``, the build puts
+   ``updater.sh``, the update script in the encoding the ROM updater requires:
+
+   .. code-block:: none
+
+      build/zephyr/zephyr.bin
+      build/zephyr/updater.sh
+
+#. Copy the two files as they are to the root of a FAT formatted SD or CF card
+   of 2 GB or smaller, with a file manager or any other way. ``updater.sh``
+   must keep its name; ``zephyr.bin`` may also be named ``zImage``.
+
+   ``boards/sharp/zaurus/common/support/zaurus_updater_codec.py`` produces the
+   encoded script from ``support/updater.sh`` by hand, and decodes one with
+   ``-d``.
+
+#. Power off, plug in the charger, then hold :kbd:`OK` and press :kbd:`On/Off`.
+   In the update menu pick the update item, then the card.
+
+#. The script checks the model, the size of ``zephyr.bin`` against the 1.2 MB
+   kernel area and its ``zImage`` header, writes it and, where the updater has
+   ``cmp``, reads it back to compare. Reset the machine when it reports
+   ``Done``.
 
 The console is on FFUART, inverted 3.3 V levels on the docking connector (TX on
 GPIO99, RX on GPIO102) and non-inverted TX on pin 2 of the service connector

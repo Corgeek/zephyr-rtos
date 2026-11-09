@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # A stock SL-C3200 has no JTAG header and no in-system programmer, so there is
-# no flash or debug runner: the image is booted as a zImage by kexec or
-# kexecboot. See doc/index.rst.
+# no flash or debug runner: the Sharp ROM updater writes zephyr.bin to the
+# kernel area of the NAND flash, with the updater.sh that CMakeLists.txt puts
+# next to it. See doc/index.rst.
 #
 # QEMU emulates the machine, but only up to 9.1: the PXA2xx machines were
 # removed in 9.2, and the Zephyr SDK ships a newer QEMU than that. Point
