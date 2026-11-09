@@ -1,0 +1,8 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: Intel/Marvell XScale CPU
+
+compatible: "intel,xscale"
+
+include: cpu.yaml

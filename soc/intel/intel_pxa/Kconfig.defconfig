@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+if SOC_FAMILY_INTEL_PXA
+
+# The UART registers are only ever accessed as 32-bit words.
+config UART_NS16550_ACCESS_WORD_ONLY
+	default y
+
+# Address 0 is chip select 0 (mask ROM or NOR flash) on every PXA design, so
+# the exception vectors have to go to the high vector page.
+config ARMV5_HIGH_VECTORS
+	default y
+
+rsource "*/Kconfig.defconfig.series"
+
+endif # SOC_FAMILY_INTEL_PXA
