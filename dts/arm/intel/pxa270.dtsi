@@ -38,6 +38,15 @@
 			status = "okay";
 		};
 
+		ost: timer@40a00000 {
+			compatible = "intel,pxa2xx-timer";
+			reg = <0x40a00000 0x1000>;
+			interrupts = <26 0>;
+			interrupt-parent = <&intc>;
+			clock-frequency = <3250000>;
+			status = "disabled";
+		};
+
 		/*
 		 * The three PXA UARTs are 16550 compatible, but with the
 		 * registers spaced four bytes apart. They run off the 312 MHz

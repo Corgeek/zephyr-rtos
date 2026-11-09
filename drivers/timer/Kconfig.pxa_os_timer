@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config PXA_OS_TIMER
+	bool "PXA2xx OS timer"
+	default y
+	depends on DT_HAS_INTEL_PXA2XX_TIMER_ENABLED
+	help
+	  Kernel tick source built on the PXA2xx OS timer (OSCR/OSMR0).
