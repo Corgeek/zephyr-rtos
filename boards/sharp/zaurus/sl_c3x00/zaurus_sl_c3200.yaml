@@ -1,0 +1,17 @@
+identifier: zaurus_sl_c3200
+name: Sharp Zaurus SL-C3200 (Terrier)
+type: mcu
+arch: arm
+# QEMU emulates this board as its terrier machine only up to QEMU 9.1, so it
+# cannot run on the QEMU of the Zephyr SDK; see the board documentation.
+toolchain:
+  - zephyr
+ram: 65504
+supported:
+  - gpio
+  - input
+testing:
+  ignore_tags:
+    - bluetooth
+    - net
+vendor: sharp
