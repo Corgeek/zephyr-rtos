@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) 2026 Takayuki Goto
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "sl_c3x00.dtsi"
+
+/ {
+	model = "Sharp Zaurus SL-C3200";
+	compatible = "sharp,zaurus-sl-c3200", "intel,pxa270";
+};

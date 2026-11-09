@@ -1,0 +1,6 @@
+boards:
+  - name: zaurus_sl_c3200
+    full_name: Sharp Zaurus SL-C3200 (Terrier)
+    vendor: sharp
+    socs:
+      - name: pxa270
