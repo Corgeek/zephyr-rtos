@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+if SOC_SERIES_PXA27X
+
+# The second interrupt controller bank of the PXA27x brings the sources up
+# to 34.
+config NUM_IRQS
+	default 34
+
+# OSCR0 runs at 3.25 MHz on PXA27x, derived from the 13 MHz oscillator and
+# independent of the core PLL. The 3.6864 MHz of PXA25x does not apply.
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default 3250000
+
+endif # SOC_SERIES_PXA27X

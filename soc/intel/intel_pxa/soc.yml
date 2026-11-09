@@ -1,0 +1,6 @@
+family:
+  - name: intel_pxa
+    series:
+      - name: pxa27x
+        socs:
+          - name: pxa270

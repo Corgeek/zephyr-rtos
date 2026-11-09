@@ -1,0 +1,7 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_PXA27X
+	select ARM
+	select CPU_XSCALE
+	select SOC_EARLY_INIT_HOOK

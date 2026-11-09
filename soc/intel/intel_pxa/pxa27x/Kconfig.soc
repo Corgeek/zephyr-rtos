@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_PXA27X
+	bool
+	select SOC_FAMILY_INTEL_PXA
+	help
+	  Intel/Marvell PXA27x (XScale, ARMv5TE) application processors.
+
+config SOC_SERIES
+	default "pxa27x" if SOC_SERIES_PXA27X
+
+config SOC_PXA270
+	bool
+	select SOC_SERIES_PXA27X
+	help
+	  Intel/Marvell PXA270
+
+config SOC
+	default "pxa270" if SOC_PXA270

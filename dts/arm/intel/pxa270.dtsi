@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) 2026 Takayuki Goto
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <mem.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,xscale";
+			reg = <0>;
+			i-cache-line-size = <32>;
+			d-cache-line-size = <32>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges;
+
+		intc: interrupt-controller@40d00000 {
+			compatible = "intel,pxa2xx-intc";
+			reg = <0x40d00000 0x1000>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			num-irqs = <34>;
+			status = "okay";
+		};
+
+		/*
+		 * The three PXA UARTs are 16550 compatible, but with the
+		 * registers spaced four bytes apart. They run off the 312 MHz
+		 * peripheral PLL divided by 21.
+		 */
+		ffuart: uart@40100000 {
+			compatible = "ns16550";
+			reg = <0x40100000 0x100>;
+			interrupts = <22 0>;
+			interrupt-parent = <&intc>;
+			reg-shift = <2>;
+			clock-frequency = <14857142>;
+			pxa-uart;
+			status = "disabled";
+		};
+
+		btuart: uart@40200000 {
+			compatible = "ns16550";
+			reg = <0x40200000 0x100>;
+			interrupts = <21 0>;
+			interrupt-parent = <&intc>;
+			reg-shift = <2>;
+			clock-frequency = <14857142>;
+			pxa-uart;
+			status = "disabled";
+		};
+
+		stuart: uart@40700000 {
+			compatible = "ns16550";
+			reg = <0x40700000 0x100>;
+			interrupts = <20 0>;
+			interrupt-parent = <&intc>;
+			reg-shift = <2>;
+			clock-frequency = <14857142>;
+			pxa-uart;
+			status = "disabled";
+		};
+	};
+};
