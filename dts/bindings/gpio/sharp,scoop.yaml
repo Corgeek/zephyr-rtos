@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Sharp SCOOP general purpose I/O.
+
+  SCOOP is the companion ASIC on the Sharp Zaurus that also runs the PCMCIA
+  sockets. Only its GPIO port is driven here: twelve lines, PA11 to PA22, held
+  in bits 1 to 12 of 16-bit registers. Pin n of this controller is bit n + 1,
+  the same numbering Linux uses, so pin 0 is PA11.
+
+compatible: "sharp,scoop"
+
+include: [gpio-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  ngpios:
+    required: true
+
+  "#gpio-cells":
+    const: 2
+
+gpio-cells:
+  - pin
+  - flags

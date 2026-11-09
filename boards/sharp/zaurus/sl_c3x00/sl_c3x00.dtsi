@@ -17,6 +17,30 @@
 #include <zephyr/dt-bindings/input/keymap.h>
 
 / {
+	aliases {
+		led0 = &green_led;
+		led1 = &orange_led;
+	};
+
+	/*
+	 * Both LEDs hang off the first SCOOP, active high, as in Linux's
+	 * spitz.c: green is the "access" LED, orange the charge LED. QEMU
+	 * prints these as "Green LED on/off" with the polarity inverted.
+	 */
+	leds {
+		compatible = "gpio-leds";
+
+		green_led: led_0 {
+			gpios = <&scoop1 0 GPIO_ACTIVE_HIGH>;
+			label = "Green access LED";
+		};
+
+		orange_led: led_1 {
+			gpios = <&scoop1 6 GPIO_ACTIVE_HIGH>;
+			label = "Orange charge LED";
+		};
+	};
+
 	/*
 	 * The keyboard: eleven strobe (column) lines driven high one at a time,
 	 * seven sense (row) lines read back high for a pressed key, as Linux's
@@ -125,6 +149,28 @@
 				MATRIX_KEY(6, 7, INPUT_KEY_DOWN)
 				MATRIX_KEY(6, 8, INPUT_KEY_RIGHT)
 			>;
+		};
+	};
+
+	soc {
+		/* Sharp SCOOP companion chips, on static chip selects 4 and 2 */
+		scoop1: gpio@10800000 {
+			compatible = "sharp,scoop";
+			reg = <0x10800000 0x40>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <12>;
+			status = "okay";
+		};
+
+		/* Backlight and IrDA controls */
+		scoop2: gpio@8800040 {
+			compatible = "sharp,scoop";
+			reg = <0x08800040 0x40>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <12>;
+			status = "okay";
 		};
 	};
 
