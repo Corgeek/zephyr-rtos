@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Intel/Marvell PXA27x LCD controller driving a parallel active (TFT) panel
+  from a 16 bpp RGB565 framebuffer in SDRAM.
+
+  The panel timing comes from a "display-timings" child node with the
+  zephyr,panel-timing properties. The pixel clock divider is worked out at
+  boot from the LCD clock the CPU is running at, rounding the panel clock
+  down.
+
+compatible: "intel,pxa27x-lcd"
+
+include: [display-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  cken-bit:
+    type: int
+    required: true
+    description: Bit number of the LCD controller clock enable in CKEN.
+
+  alternate-mapping:
+    type: boolean
+    description: |
+      Set LCCR0[LDDALT], the alternate mapping of 16 bpp data onto the
+      LDD pins that Sharp's Zaurus panels use.
