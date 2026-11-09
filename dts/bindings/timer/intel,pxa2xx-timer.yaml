@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Intel/Marvell PXA2xx OS timer.
+
+  OSCR is a free running 32-bit up counter clocked at 3.25 MHz on PXA27x; the kernel
+  tick is generated from a match on OSMR0.
+
+compatible: "intel,pxa2xx-timer"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  clock-frequency:
+    type: int
+    required: true
+    description: OSCR input clock frequency, in Hz.
