@@ -9,6 +9,7 @@ toolchain:
 ram: 65504
 supported:
   - gpio
+  - i2c
   - input
   - spi
 testing:
