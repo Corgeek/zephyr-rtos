@@ -63,6 +63,9 @@ tests:
       # No trigger_irq implementation for the Microchip AIC in
       # interrupt_util.h yet.
       - sama5d27_som1_ek1
+      # The PXA2xx interrupt controller cannot raise an interrupt from
+      # software, so interrupt_util.h has no trigger_irq for it.
+      - zaurus_sl_c3200
     arch_exclude:
       # test needs 2 working interrupt lines
       - xtensa
@@ -96,6 +99,9 @@ tests:
       # No trigger_irq implementation for the Microchip AIC in
       # interrupt_util.h yet.
       - sama5d27_som1_ek1
+      # The PXA2xx interrupt controller cannot raise an interrupt from
+      # software, so interrupt_util.h has no trigger_irq for it.
+      - zaurus_sl_c3200
     arch_exclude:
       # test needs 2 working interrupt lines
       - xtensa
