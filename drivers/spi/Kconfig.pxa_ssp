@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Takayuki Goto
+# SPDX-License-Identifier: Apache-2.0
+
+config SPI_PXA_SSP
+	bool "PXA2xx SSP as SPI controller"
+	default y
+	depends on DT_HAS_INTEL_PXA2XX_SSP_ENABLED
+	select GPIO
+	help
+	  Polled SPI on a PXA2xx SSP port, with GPIO chip selects.

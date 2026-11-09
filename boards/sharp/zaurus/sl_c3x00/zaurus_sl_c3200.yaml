@@ -10,6 +10,7 @@ ram: 65504
 supported:
   - gpio
   - input
+  - spi
 testing:
   ignore_tags:
     - bluetooth
