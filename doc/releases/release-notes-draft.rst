@@ -64,6 +64,13 @@ Libraries / Subsystems
   * Added a PSA Protected Storage backend, enabled with
     :kconfig:option:`CONFIG_FIDO2_STORAGE_PSA_PROTECTED_STORAGE`.
 
+* Input
+
+  * Switch events (``INPUT_EV_SW``), with the switch codes of Linux, report the state of
+    switches such as a lid, a tablet mode sensor or a jack detection.
+    :dtcompatible:`gpio-keys` emits them for a key with ``zephyr,input-type = <INPUT_EV_SW>``,
+    and reports a switch's state at initialization and on resume as well as on every change.
+
 * LoRaWAN
 
   * The native backend now supports the AS923 region

@@ -78,6 +78,20 @@ child-binding:
       type: int
       description: Key code to emit.
 
+    zephyr,input-type:
+      type: int
+      default: 1
+      enum:
+        - 1
+        - 5
+      description: |
+        Type of the events to emit, as Linux's linux,input-type:
+
+        - INPUT_EV_KEY (1): a key or a button, reported when it changes.
+        - INPUT_EV_SW (5): a switch, such as a lid or a jack detection,
+          whose state also matters before it first changes. Its state is
+          reported at initialization and on resume as well.
+
 examples:
   - |
     #include <zephyr/dt-bindings/input/input-event-codes.h>
@@ -88,6 +102,12 @@ examples:
                    button_0 {
                            gpios = <&gpio0 13 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
                            zephyr,code = <INPUT_KEY_0>;
+                   };
+
+                   lid_switch {
+                           gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+                           zephyr,input-type = <INPUT_EV_SW>;
+                           zephyr,code = <INPUT_SW_LID>;
                    };
            };
     };

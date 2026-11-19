@@ -36,6 +36,8 @@ struct gpio_keys_pin_config {
 	struct gpio_dt_spec spec;
 	/** Zephyr code from devicetree */
 	uint32_t zephyr_code;
+	/** Event type from devicetree, INPUT_EV_KEY or INPUT_EV_SW */
+	uint8_t type;
 };
 
 struct gpio_keys_pin_data {
@@ -61,6 +63,12 @@ struct gpio_keys_data {
 #endif
 };
 
+/* A switch reports its state even before the first change */
+static bool gpio_keys_is_switch(const struct gpio_keys_pin_config *pin_cfg)
+{
+	return pin_cfg->type == INPUT_EV_SW;
+}
+
 /**
  * Handle debounced gpio pin state.
  */
@@ -85,9 +93,10 @@ static void gpio_keys_poll_pin(const struct device *dev, int key_index)
 	/* If gpio changed, report the event */
 	if (new_pressed != pin_data->cb_data.pin_state) {
 		pin_data->cb_data.pin_state = new_pressed;
-		LOG_DBG("Report event %s %d, code=%d", dev->name, new_pressed,
-			pin_cfg->zephyr_code);
-		input_report_key(dev, pin_cfg->zephyr_code, new_pressed, true, K_FOREVER);
+		LOG_DBG("Report event %s %d, type=%d, code=%d", dev->name, new_pressed,
+			pin_cfg->type, pin_cfg->zephyr_code);
+		input_report(dev, pin_cfg->type, pin_cfg->zephyr_code, new_pressed, true,
+			     K_FOREVER);
 	}
 }
 
@@ -197,16 +206,22 @@ static int gpio_keys_init(const struct device *dev)
 		pin_data[i].dev = dev;
 		k_work_init_delayable(&pin_data[i].work, cfg->handler);
 
-		if (cfg->polling_mode) {
-			continue;
+		if (!cfg->polling_mode) {
+			ret = gpio_keys_interrupt_configure(&cfg->pin_cfg[i].spec,
+							    &pin_data[i].cb_data,
+							    cfg->pin_cfg[i].zephyr_code);
+			if (ret != 0) {
+				LOG_ERR("Pin %d interrupt configuration failed: %d", i, ret);
+				return ret;
+			}
 		}
 
-		ret = gpio_keys_interrupt_configure(&cfg->pin_cfg[i].spec,
-						    &pin_data[i].cb_data,
-						    cfg->pin_cfg[i].zephyr_code);
-		if (ret != 0) {
-			LOG_ERR("Pin %d interrupt configuration failed: %d", i, ret);
-			return ret;
+		if (gpio_keys_is_switch(&cfg->pin_cfg[i])) {
+			/* No state yet: the first poll reports the current one */
+			pin_data[i].cb_data.pin_state = -1;
+			if (!cfg->polling_mode) {
+				k_work_reschedule(&pin_data[i].work, K_NO_WAIT);
+			}
 		}
 	}
 
@@ -308,6 +323,14 @@ static int gpio_keys_pm_action(const struct device *dev,
 					return ret;
 				}
 			}
+
+			if (gpio_keys_is_switch(&cfg->pin_cfg[i])) {
+				/* It may have changed while suspended */
+				pin_data[i].cb_data.pin_state = -1;
+				if (!cfg->polling_mode) {
+					k_work_reschedule(&pin_data[i].work, K_NO_WAIT);
+				}
+			}
 		}
 
 		return 0;
@@ -325,6 +348,7 @@ static int gpio_keys_pm_action(const struct device *dev,
 	{                                                                                          \
 		.spec = GPIO_DT_SPEC_GET(node_id, gpios),                                          \
 		.zephyr_code = DT_PROP(node_id, zephyr_code),                                      \
+		.type = DT_PROP(node_id, zephyr_input_type),                                       \
 	}
 
 #define GPIO_KEYS_INIT(i)                                                                          \
