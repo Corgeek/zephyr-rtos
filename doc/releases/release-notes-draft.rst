@@ -82,6 +82,13 @@ Libraries / Subsystems
     :c:member:`i3c_config_controller.tcas_ps` and the ``tcas-ps`` controller
     Devicetree property.
 
+* Input
+
+  * Switch events (``INPUT_EV_SW``), with the switch codes of Linux, report the state of
+    switches such as a lid, a tablet mode sensor or a jack detection.
+    :dtcompatible:`gpio-keys` emits them for a key with ``zephyr,input-type = <INPUT_EV_SW>``,
+    and reports a switch's state at initialization and on resume as well as on every change.
+
 * Libc
 
   * ``zephyr_write_stdout()`` no longer converts LF to CRLF. Backends that

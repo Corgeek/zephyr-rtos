@@ -20,6 +20,8 @@ struct gpio_keys_pin_config {
 	struct gpio_dt_spec spec;
 	/** Zephyr code from devicetree */
 	uint32_t zephyr_code;
+	/** Event type from devicetree */
+	uint8_t type;
 };
 struct gpio_keys_config {
 	/** Debounce interval in milliseconds from devicetree */
@@ -82,4 +84,40 @@ ZTEST(gpio_keys, test_gpio_keys_pressed)
 	zassert_equal(event_count, 2);
 	zassert_equal(last_code, pin_cfg->zephyr_code);
 	zassert_equal(last_val, false);
+}
+
+static const struct device *const test_switches_dev = DEVICE_DT_GET(DT_NODELABEL(switches));
+#define SWITCH_0_IDX DT_NODE_CHILD_IDX(DT_NODELABEL(lid_switch))
+
+static int switch_event_count;
+static struct input_event last_switch_evt;
+static void test_switches_cb_handler(struct input_event *evt, void *user_data)
+{
+	switch_event_count++;
+	last_switch_evt = *evt;
+}
+INPUT_CALLBACK_DEFINE(test_switches_dev, test_switches_cb_handler, NULL);
+
+/**
+ * @brief TestPurpose: Verify a switch reports its initial state and changes.
+ *
+ */
+ZTEST(gpio_keys, test_gpio_keys_switch)
+{
+	const struct gpio_keys_config *config = test_switches_dev->config;
+	const struct gpio_keys_pin_config *pin_cfg = &config->pin_cfg[SWITCH_0_IDX];
+	const struct gpio_dt_spec *spec = &pin_cfg->spec;
+
+	/* The state at initialization, before any change */
+	zassert_equal(switch_event_count, 1);
+	zassert_equal(last_switch_evt.type, INPUT_EV_SW);
+	zassert_equal(last_switch_evt.code, INPUT_SW_LID);
+	zassert_equal(last_switch_evt.value, 0);
+
+	zassert_ok(gpio_emul_input_set(spec->port, spec->pin, 1));
+	k_sleep(K_MSEC(config->debounce_interval_ms * 3 / 2));
+	zassert_equal(switch_event_count, 2);
+	zassert_equal(last_switch_evt.type, INPUT_EV_SW);
+	zassert_equal(last_switch_evt.code, INPUT_SW_LID);
+	zassert_equal(last_switch_evt.value, 1);
 }
