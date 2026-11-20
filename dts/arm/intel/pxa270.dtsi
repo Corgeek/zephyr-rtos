@@ -147,6 +147,20 @@
 			status = "disabled";
 		};
 
+		/*
+		 * USB host controller, OHCI compatible. The PXA27x specific
+		 * registers that follow the OHCI ones (UHCHR and on) are set up
+		 * by the SoC and the board before the driver starts.
+		 */
+		usbh: usb@4c000000 {
+			compatible = "generic-ohci";
+			reg = <0x4c000000 0x100>;
+			interrupts = <3 0>;
+			interrupt-parent = <&intc>;
+			maximum-speed = "full-speed";
+			status = "disabled";
+		};
+
 		lcd: lcd-controller@44000000 {
 			compatible = "intel,pxa27x-lcd";
 			reg = <0x44000000 0x1000>;
