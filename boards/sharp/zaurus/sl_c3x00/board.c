@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <zephyr/platform/hooks.h>
 #include <zephyr/sys/poweroff.h>
@@ -20,11 +21,48 @@
 #define GPIO_SERVICE_TXD    83U
 #define GPIO_SERVICE_TXD_AF 2U
 
+#if DT_NODE_HAS_STATUS_OKAY(DT_NODELABEL(usbh))
+/* USB host: only port 2 is wired, as in Linux's spitz.c */
+#define UHC_BASE      DT_REG_ADDR(DT_NODELABEL(usbh))
+#define UHCRHDA       (UHC_BASE + 0x48U)
+#define UHCRHDA_NOCP  BIT(12)
+#define UHCRHDA_NPS   BIT(9)
+#define UHCHR         (UHC_BASE + 0x64U)
+#define UHCHR_SSEP3   BIT(11)
+#define UHCHR_SSEP2   BIT(10)
+#define UHCHR_SSEP1   BIT(9)
+#define UP2OCR        0x40600020U
+#define UP2OCR_HXOE   BIT(17)
+#define UP2OCR_HXS    BIT(16)
+#define UP2OCR_DMPDE  BIT(3)
+#define UP2OCR_DPPDE  BIT(2)
+#define GPIO_USB_HOST 37U
+
+/*
+ * Ports out of sleep standby, no power switching and no over-current
+ * protection, port 2 on the host transceiver with its pull-downs, and the
+ * 5 V supply of the connector on.
+ */
+static void zaurus_usbh_init(void)
+{
+	sys_write32(sys_read32(UHCHR) & ~(UHCHR_SSEP1 | UHCHR_SSEP2 | UHCHR_SSEP3), UHCHR);
+	sys_write32(sys_read32(UHCRHDA) | UHCRHDA_NPS | UHCRHDA_NOCP, UHCRHDA);
+	sys_write32(UP2OCR_HXS | UP2OCR_HXOE | UP2OCR_DPPDE | UP2OCR_DMPDE, UP2OCR);
+
+	pxa_gpio_set(GPIO_USB_HOST, true);
+	pxa_gpio_set_af(GPIO_USB_HOST, 0U, true);
+}
+#endif
+
 void board_early_init_hook(void)
 {
 	pxa_gpio_set_af(GPIO_IO_PORT_TXD, GPIO_IO_PORT_AF, true);
 	pxa_gpio_set_af(GPIO_IO_PORT_RXD, GPIO_IO_PORT_AF, false);
 	pxa_gpio_set_af(GPIO_SERVICE_TXD, GPIO_SERVICE_TXD_AF, true);
+
+#if DT_NODE_HAS_STATUS_OKAY(DT_NODELABEL(usbh))
+	zaurus_usbh_init();
+#endif
 }
 
 /*

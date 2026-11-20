@@ -307,3 +307,8 @@
 		pixelclk-active = <0>;
 	};
 };
+
+/* USB host, on port 2 of the PXA27x */
+zephyr_uhc0: &usbh {
+	status = "okay";
+};
