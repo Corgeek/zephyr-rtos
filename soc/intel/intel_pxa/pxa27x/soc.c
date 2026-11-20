@@ -22,13 +22,55 @@
 #define CKEN         0x41300004U
 #define CKEN_FFUART  BIT(6)
 #define CKEN_OSTIMER BIT(9)
+#define CKEN_USBHOST BIT(10)
 #define CCSR         0x4130000cU
 #define CCSR_L_MASK  0x1fU
 
 /* Power manager: sleep status register, write one to clear */
 #define PSSR     0x40f00004U
-#define PSSR_RDH BIT(5)
-#define PSSR_PH  BIT(4)
+#define PSSR_OTGPH BIT(6)
+#define PSSR_RDH   BIT(5)
+#define PSSR_PH    BIT(4)
+
+/* OS timer counter, 3.25 MHz */
+#define OSCR 0x40a00010U
+
+#if DT_NODE_HAS_STATUS_OKAY(DT_NODELABEL(usbh))
+/* USB host controller: PXA27x registers after the OHCI ones */
+#define UHCHR       (DT_REG_ADDR(DT_NODELABEL(usbh)) + 0x64U)
+#define UHCHR_SSE   BIT(5)
+#define UHCHR_FHR   BIT(1)
+#define UHCHR_FSBIR BIT(0)
+
+/* At least 11 us, as Linux holds the reset */
+#define UHCHR_FHR_CYCLES 36U
+
+/*
+ * Clock and reset the USB host controller before the OHCI driver reads it,
+ * as Linux's ohci-pxa27x.c does; the board then sets up its ports.
+ */
+static void pxa27x_usbh_reset(void)
+{
+	uint32_t start;
+
+	sys_write32(sys_read32(CKEN) | CKEN_USBHOST, CKEN);
+
+	sys_write32(sys_read32(UHCHR) | UHCHR_FHR, UHCHR);
+	start = sys_read32(OSCR);
+	while ((sys_read32(OSCR) - start) < UHCHR_FHR_CYCLES) {
+	}
+	sys_write32(sys_read32(UHCHR) & ~UHCHR_FHR, UHCHR);
+
+	sys_write32(sys_read32(UHCHR) | UHCHR_FSBIR, UHCHR);
+	while ((sys_read32(UHCHR) & UHCHR_FSBIR) != 0U) {
+	}
+
+	sys_write32(sys_read32(UHCHR) & ~UHCHR_SSE, UHCHR);
+
+	/* Release the USB pins from their sleep state */
+	sys_write32(PSSR_OTGPH, PSSR);
+}
+#endif
 
 uint32_t pxa_lcd_clock_hz(void)
 {
@@ -53,6 +95,10 @@ void soc_early_init_hook(void)
 
 	/* Release the pins from the state they were held in across sleep. */
 	sys_write32(PSSR_RDH | PSSR_PH, PSSR);
+
+#if DT_NODE_HAS_STATUS_OKAY(DT_NODELABEL(usbh))
+	pxa27x_usbh_reset();
+#endif
 }
 
 /*
