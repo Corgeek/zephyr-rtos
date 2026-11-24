@@ -621,7 +621,9 @@ static void ohci_link_chain(struct ohci_data *data, struct ohci_xfer_slot *slot,
 	 * enable time is not clobbered.  The ed.next field is set up once in
 	 * ohci_setup_bulk_list() and must not be touched here.
 	 */
-	slot->ed.flags = ed_flags;
+	/* Skipped until the TD queue is complete, see ohci_try_schedule_next() */
+	slot->ed.flags = ed_flags | OHCI_ED_SKIP;
+	compiler_barrier();
 	slot->ed.headp = ohci_td_phys(&slot->tds[0]);
 	/* Bulk and interrupt endpoints keep their data toggle across transfers */
 	if (xfer->type != USB_EP_TYPE_CONTROL &&
@@ -674,7 +676,19 @@ static void ohci_setup_bulk_list(const struct device *dev)
 			? ohci_phys_addr(&data->slots[i + 1U].ed)
 			: 0U;
 	}
+	/*
+	 * The control slot ED stays the head of the control list, skipped
+	 * while it holds no transfer. Taking it off the list with a zero head
+	 * while ControlListFilled is set has the PXA27x controller fetch an ED
+	 * from address 0, and then stop serving the bulk list.
+	 */
+	data->slots[OHCI_CTRL_SLOT].ed.flags = OHCI_ED_SKIP;
+	data->slots[OHCI_CTRL_SLOT].ed.headp = 0U;
+	data->slots[OHCI_CTRL_SLOT].ed.tailp = 0U;
+	data->slots[OHCI_CTRL_SLOT].ed.next = 0U;
 	compiler_barrier();
+	sys_write32(ohci_phys_addr(&data->slots[OHCI_CTRL_SLOT].ed),
+		    ohci_base(dev) + OHCI_CONTROL_HEAD_ED);
 	sys_write32((OHCI_MAX_SLOTS > 1U) ? ohci_phys_addr(&data->slots[1U].ed) : 0U,
 		    ohci_base(dev) + OHCI_BULK_HEAD_ED);
 }
@@ -735,10 +749,6 @@ static void ohci_finish_slot(const struct device *dev, struct ohci_xfer_slot *sl
 	LOG_DBG("Complete xfer ep 0x%02x err %d td_count %u actual_in %zu slot %u",
 		xfer->ep, err, slot->td_count, actual_in,
 		(unsigned int)(slot - data->slots));
-
-	if (is_ctrl) {
-		sys_write32(0U, ohci_base(dev) + OHCI_CONTROL_HEAD_ED);
-	}
 
 	/*
 	 * ohci_clear_slot() preserves ed.next and sets OHCI_ED_SKIP, so the
@@ -863,19 +873,15 @@ static int ohci_try_schedule_next(const struct device *dev)
 		/* Ensure all TD/ED writes reach hardware before kicking the HC. */
 		compiler_barrier();
 
-		if (is_ctrl) {
-			sys_write32(ohci_phys_addr(&slot->ed),
-				    ohci_base(dev) + OHCI_CONTROL_HEAD_ED);
-			sys_write32(OHCI_CMDSTATUS_CLF, ohci_base(dev) + OHCI_CMDSTATUS);
-		} else {
-			/*
-			 * Clear the SKIP bit to make this ED visible to the HC.
-			 * It is set by ohci_setup_bulk_list() and ohci_clear_slot().
-			 */
-			slot->ed.flags &= ~OHCI_ED_SKIP;
-			compiler_barrier();
-			sys_write32(OHCI_CMDSTATUS_BLF, ohci_base(dev) + OHCI_CMDSTATUS);
-		}
+		/*
+		 * Clear the SKIP bit to make this ED visible to the HC. It is
+		 * set by ohci_setup_bulk_list(), ohci_clear_slot() and
+		 * ohci_link_chain().
+		 */
+		slot->ed.flags &= ~OHCI_ED_SKIP;
+		compiler_barrier();
+		sys_write32(is_ctrl ? OHCI_CMDSTATUS_CLF : OHCI_CMDSTATUS_BLF,
+			    ohci_base(dev) + OHCI_CMDSTATUS);
 
 		/* Refresh free-slot flags after allocation. */
 		any_ctrl_free = (data->slots[OHCI_CTRL_SLOT].xfer == NULL);
@@ -1563,12 +1569,8 @@ static int ohci_ep_dequeue(const struct device *dev, struct uhc_transfer *const 
 			data->slots[i].ed.flags, data->slots[i].ed.headp, data->slots[i].ed.tailp,
 			data->slots[i].tds[0].hw.flags, data->slots[i].tds[0].hw.cbp);
 
-		if (i == OHCI_CTRL_SLOT) {
-			sys_write32(0U, ohci_base(dev) + OHCI_CONTROL_HEAD_ED);
-		} else {
-			data->slots[i].ed.flags |= OHCI_ED_SKIP;
-			compiler_barrier();
-		}
+		data->slots[i].ed.flags |= OHCI_ED_SKIP;
+		compiler_barrier();
 		ohci_clear_slot(&data->slots[i]);
 		uhc_xfer_return(dev, xfer, -ECONNRESET);
 		(void)ohci_try_schedule_next(dev);
